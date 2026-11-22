@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b2732">
+  <meta name="description" content="لوحة مواقيت الصلاة بمدينة وجدة والتنبيه قبل الأذان">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <title>مواقيت الصلاة · وجدة</title>
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <main class="shell" id="app">
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">☾</div>
+      <div class="brand-copy">
+        <div class="eyebrow">المملكة المغربية · جهة الشرق</div>
+        <h1>مواقيت الصلاة <span>· وجدة</span></h1>
+        <p>لوحة متابعة وتنبيه شخصية</p>
+      </div>
+      <div class="top-actions">
+        <span class="status-pill" id="connectionBadge"><i></i> غير متصل بالجدول</span>
+        <button class="icon-btn" id="installBtn" hidden title="تثبيت التطبيق">⇩</button>
+        <button class="icon-btn" id="refreshBtn" title="تحديث البيانات" aria-label="تحديث البيانات">↻</button>
+      </div>
+    </header>
+
+    <section class="connect-panel panel" id="connectPanel">
+      <div class="connect-heading">
+        <div>
+          <span class="section-kicker">الربط بقاعدة البيانات</span>
+          <h2>اربط لوحة التحكم بورقة «وجدة»</h2>
+          <p>ألصق رابط تطبيق Apps Script الذي ينتهي بـ <b>/exec</b>. هذا الربط للقراءة فقط.</p>
+        </div>
+        <div class="link-symbol">↔</div>
+      </div>
+      <div class="connect-controls">
+        <input id="apiUrl" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" aria-label="رابط واجهة بيانات Apps Script">
+        <button class="btn primary" id="connectBtn">حفظ الرابط والاتصال</button>
+      </div>
+      <div class="connect-status" id="apiStatus" role="status">لم يتم ربط مصدر البيانات بعد.</div>
+    </section>
+
+    <section class="hero-grid">
+      <article class="hero-card next-card panel">
+        <div class="hero-watermark" aria-hidden="true">☾</div>
+        <div class="card-kicker">الصلاة القادمة</div>
+        <div class="next-name" id="nextName">بانتظار بيانات المواقيت</div>
+        <div class="next-time" id="nextTime">—</div>
+        <div class="countdown-label">الوقت المتبقي على الأذان</div>
+        <div class="countdown" id="countdown">--:--:--</div>
+        <div class="lead-note" id="leadInfo">التذكير قبل الأذان: 10 دقائق</div>
+      </article>
+      <article class="hero-card clock-card panel">
+        <div class="card-kicker">التوقيت المحلي في وجدة</div>
+        <div class="clock" id="clock">--:--:--</div>
+        <div class="gregorian" id="gregorianDate">—</div>
+        <div class="hijri" id="hijriDate">التاريخ الهجري يظهر عند توفره في الجدول</div>
+        <div class="clock-divider"></div>
+        <div class="small-line"><span>آخر مزامنة للوزارة</span><b id="lastSync">لم تتم بعد</b></div>
+        <div class="small-line"><span>حالة المصدر</span><b id="sourceStatus">بانتظار الربط</b></div>
+      </article>
+    </section>
+
+    <section class="section-block">
+      <div class="section-head"><div><span class="section-kicker">جدول اليوم</span><h2>مواقيت الصلوات الخمس</h2></div><span class="section-hint">التوقيت المعتمد: Africa/Casablanca</span></div>
+      <div class="prayer-grid" id="prayerCards">
+        <article class="prayer-card"><span>☀</span><b>الصبح</b><strong>—</strong></article>
+        <article class="prayer-card"><span>◉</span><b>الظهر</b><strong>—</strong></article>
+        <article class="prayer-card"><span>◷</span><b>العصر</b><strong>—</strong></article>
+        <article class="prayer-card"><span>▣</span><b>المغرب</b><strong>—</strong></article>
+        <article class="prayer-card"><span>☾</span><b>العشاء</b><strong>—</strong></article>
+      </div>
+    </section>
+
+    <section class="lower-grid">
+      <article class="panel week-panel">
+        <div class="section-head compact"><div><span class="section-kicker">نظرة مستقبلية</span><h2>الأيام السبعة القادمة</h2></div><span class="tiny-label">من ورقة وجدة</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>اليوم / التاريخ</th><th>الصبح</th><th>الظهر</th><th>العصر</th><th>المغرب</th><th>العشاء</th></tr></thead>
+            <tbody id="weekBody"><tr><td colspan="6" class="empty">اربط ورقة البيانات لعرض المواقيت.</td></tr></tbody>
+          </table>
+        </div>
+      </article>
+
+      <aside class="panel settings-panel">
+        <div class="section-head compact"><div><span class="section-kicker">التخصيص</span><h2>إعدادات التنبيه</h2></div><span class="gear">⚙</span></div>
+        <div class="setting-row">
+          <label for="leadMinutes">التذكير قبل الأذان</label>
+          <div class="inline-input"><input id="leadMinutes" type="number" min="0" max="180" step="1" value="10"><span>دقيقة</span></div>
+        </div>
+        <div class="setting-row vertical">
+          <span class="setting-title">وسائل التنبيه</span>
+          <label class="toggle"><input id="browserEnabled" type="checkbox"><span></span> إشعار المتصفح / النظام</label>
+          <label class="toggle"><input id="inAppEnabled" type="checkbox" checked><span></span> رسالة داخل التطبيق</label>
+          <label class="toggle"><input id="soundEnabled" type="checkbox" checked><span></span> تنبيه صوتي</label>
+        </div>
+        <div class="setting-row vertical">
+          <label for="soundType">نغمة التنبيه</label>
+          <select id="soundType"><option value="chime">رنين هادئ</option><option value="bell">جرس</option><option value="soft">نغمة ناعمة</option><option value="beep">تنبيه قصير</option><option value="custom">رابط صوت خاص</option><option value="none">بدون صوت</option></select>
+          <label for="customSoundUrl" class="sub-label">رابط ملف صوتي مباشر (اختياري)</label>
+          <input id="customSoundUrl" type="url" placeholder="https://example.com/alert.mp3">
+          <div class="volume-line"><label for="volume">مستوى الصوت</label><input id="volume" type="range" min="0" max="100" value="65"><b id="volumeValue">65%</b></div>
+        </div>
+        <div class="setting-row vertical">
+          <span class="setting-title">الصلوات التي تريد التنبيه لها</span>
+          <div class="prayer-checks">
+            <label><input type="checkbox" data-prayer="fajr" checked> الصبح</label>
+            <label><input type="checkbox" data-prayer="dhuhr" checked> الظهر</label>
+            <label><input type="checkbox" data-prayer="asr" checked> العصر</label>
+            <label><input type="checkbox" data-prayer="maghrib" checked> المغرب</label>
+            <label><input type="checkbox" data-prayer="isha" checked> العشاء</label>
+          </div>
+        </div>
+        <div class="button-stack">
+          <button class="btn primary full" id="saveSettingsBtn">حفظ الإعدادات</button>
+          <div class="two-buttons"><button class="btn secondary" id="enableNotificationsBtn">تفعيل إشعارات المتصفح</button><button class="btn secondary" id="testSoundBtn">اختبار الصوت</button></div>
+        </div>
+        <div class="notification-status" id="notificationStatus" role="status">حالة إشعارات المتصفح لم تُفحص بعد.</div>
+      </aside>
+    </section>
+
+    <section class="panel source-panel">
+      <div class="source-icon">✓</div>
+      <div class="source-copy"><b>المصدر الرسمي للمواقيت</b><p>وزارة الأوقاف والشؤون الإسلامية المغربية. لا تُستخدم حسابات فلكية بديلة، وتظل الخانات غير المنشورة فارغة.</p></div>
+      <a href="https://habous.gov.ma/prieres/index.php" target="_blank" rel="noopener">فتح موقع الوزارة ↗</a>
+    </section>
+
+    <footer class="footer"><span>مواقيت وجدة · توقيت المغرب</span><span>التنبيهات تعمل ما دام التطبيق مفتوحاً. الإشعارات بعد إغلاقه تحتاج خدمة Push مستقلة.</span></footer>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./app.js" defer></script>
+</body>
+</html>
